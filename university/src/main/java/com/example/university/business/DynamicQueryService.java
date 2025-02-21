@@ -6,7 +6,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.university.domain.Course;
+import com.example.university.domain.QCourse;
+import com.example.university.repo.CourseQueryDslRepo;
 import com.example.university.repo.CourseRepo;
+import com.querydsl.core.BooleanBuilder;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -14,9 +17,12 @@ import jakarta.persistence.criteria.Predicate;
 public class DynamicQueryService {
 
     private CourseRepo courseRepo;
+    private CourseQueryDslRepo queryDslRepo;
 
-    public DynamicQueryService(CourseRepo courseRepo) {
+    public DynamicQueryService(CourseRepo courseRepo,
+            CourseQueryDslRepo queryDslRepo) {
         this.courseRepo = courseRepo;
+        this.queryDslRepo = queryDslRepo;
     }
 
     public List<Course> filterBySpecification(CourseFilter filter) {
@@ -27,5 +33,17 @@ public class DynamicQueryService {
             filter.getInstructor().ifPresent(i -> predicates.add(criteriaBuilder.equal(root.get("instructor"), i)));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
+    }
+
+    public List<Course> filterByQueryDsl(CourseFilter filter) {
+        QCourse qCourse = com.example.university.domain.QCourse.course;
+        BooleanBuilder pred = new BooleanBuilder();
+        filter.getDepartment().ifPresent(d -> pred.and(qCourse.department.eq(d)));
+        filter.getCredits().ifPresent(c -> pred.and(qCourse.credits.eq(c)));
+        filter.getInstructor().ifPresent(i -> pred.and(qCourse.instructor.eq(i)));
+       
+        List<Course> courses = new ArrayList<>();
+        queryDslRepo.findAll(pred).forEach(courses::add);
+        return courses;
     }
 }
