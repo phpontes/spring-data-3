@@ -15,7 +15,6 @@ public interface StudentRepo extends JpaRepository<Student, Integer> {
   
   List<Student> findByAttendeeLastName(String lastName);
   
-/*
   // Queries with clauses and expressions
   // findOldest
   Optional<Student> findTopByOrderByAgeDesc();
@@ -34,5 +33,4 @@ public interface StudentRepo extends JpaRepository<Student, Integer> {
 
   // find3Oldest
   List<Student> findTop3ByOrderByAgeDesc();
-  */
 }
